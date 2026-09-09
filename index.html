@@ -337,9 +337,7 @@
   <section class="panel">
     <h2>Eindresultaat</h2>
     <p class="hint" id="summaryHint">Vul de waarschijnlijkheid en één of meer effectcategorieën in.</p>
-    <div class="warning" id="incompleteWarning">
-      <strong>Let op:</strong> nog niet alle effecten per bedrijfswaarde zijn geselecteerd. Het eindresultaat is daarom voorlopig en gebaseerd op de reeds ingevulde effectcategorieën.
-    </div>
+    <div class="warning" id="incompleteWarning"></div>
     <div class="summary">
       <div class="summary-card">
         <span>Hoogste risicoklasse</span>
@@ -667,9 +665,16 @@ function updateAll(){
   if (complete){
     document.getElementById('summaryHint').textContent = 'De beoordeling is compleet.';
     warning.classList.remove('visible');
+    warning.innerHTML = '';
   } else {
+    const missingValues = businessValues.filter(v => !selections[v]);
     document.getElementById('summaryHint').textContent =
       `Voorlopig resultaat op basis van ${completedCount} van ${businessValues.length} effectcategorieën.`;
+    warning.innerHTML = `
+      <strong>Let op:</strong> nog niet alle effecten per bedrijfswaarde zijn geselecteerd.
+      Het eindresultaat is daarom voorlopig en gebaseerd op de reeds ingevulde effectcategorieën.
+      <br><strong>Nog niet ingevuld:</strong> ${missingValues.join(', ')}.
+    `;
     warning.classList.add('visible');
   }
 }
