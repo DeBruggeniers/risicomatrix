@@ -126,6 +126,27 @@
     grid-template-columns:repeat(6,1fr);
     gap:7px;
   }
+  .road-controls{
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    gap:10px;
+  }
+  .road-controls label{
+    display:block;
+    font-size:11px;
+    font-weight:700;
+    color:var(--muted);
+    margin-bottom:5px;
+  }
+  .road-controls select{
+    width:100%;
+    padding:10px 9px;
+    border:1px solid var(--line);
+    border-radius:9px;
+    background:#fff;
+    color:#344054;
+    font-weight:700;
+  }
   .effect-buttons button{
     border:1px solid var(--line);
     background:#fff;
@@ -237,6 +258,19 @@
     color:#344054;
   }
   .reset:hover{background:#f7f9fc}
+  .warning{
+    display:none;
+    margin:12px 0 0;
+    padding:12px 14px;
+    border-radius:10px;
+    background:#fff7e6;
+    border:1px solid #f0c36d;
+    color:#7a4a00;
+    font-size:13px;
+    line-height:1.45;
+  }
+  .warning.visible{display:block}
+  .warning strong{font-weight:800}
   .footnote{
     color:var(--muted);
     font-size:12px;
@@ -286,7 +320,10 @@
 
   <section class="panel">
     <h2>Eindresultaat</h2>
-    <p class="hint" id="summaryHint">Vul de waarschijnlijkheid en alle vijf effectklassen in.</p>
+    <p class="hint" id="summaryHint">Vul de waarschijnlijkheid en één of meer effectcategorieën in.</p>
+    <div class="warning" id="incompleteWarning">
+      <strong>Let op:</strong> nog niet alle effecten per bedrijfswaarde zijn geselecteerd. Het eindresultaat is daarom voorlopig en gebaseerd op de reeds ingevulde effectcategorieën.
+    </div>
     <div class="summary">
       <div class="summary-card">
         <span>Hoogste risicoklasse</span>
@@ -302,7 +339,7 @@
       </div>
     </div>
     <div class="footnote">
-      Risicoscore = kansfactor × effectfactor. De totale risicoscore is de som van de scores over de vijf bedrijfswaarden.
+      Risicoscore = kansfactor × effectfactor. De totale risicoscore is de som van de scores over alle effectcategorieën.
     </div>
   </section>
 </div>
@@ -327,108 +364,107 @@ const effects = [
 ];
 
 const effectDescriptions = {
-  'Bereikbaarheid': {
-    '< A': [
-      ['Weg', 'Kleiner dan hindercategorie A'],
-      ['Vaarweg', 'Zeer korte stremming of lichte hinder. Richtwaarde: < 2 uur stremming óf beperkte wachttijd, geen structureel effect op vaarroutes.']
-    ],
-    'A': [
-      ['Weg', 'Hindercategorie A'],
-      ['Vaarweg', 'Tijdelijke stremming met merkbare impact. Richtwaarde: 2–24 uur stremming. Er is een alternatief (omvaren), maar met extra reistijd of beperkingen.']
-    ],
-    'B': [
-      ['Weg', 'Hindercategorie B'],
-      ['Vaarweg', 'Langdurige stremming met grote impact. Richtwaarde: 1–7 dagen stremming. Alternatieven zijn beperkt of zorgen voor aanzienlijke omvaart/vertraging.']
-    ],
-    'C': [
-      ['Weg', 'Hindercategorie C'],
-      ['Vaarweg', 'Zeer langdurige of volledige uitval van een cruciale schakel. Richtwaarde: > 7 dagen stremming of herhaald uitvalpatroon. Geen realistisch alternatief, netwerkfunctie valt (deels) weg.']
-    ],
-    'D': [
-      ['Weg', 'Hindercategorie D'],
-      ['Vaarweg', 'Extreem langdurige of volledige uitval van een cruciale schakel. Richtwaarde: > 1 maand stremming of herhaald uitvalpatroon. Geen realistisch alternatief, netwerkfunctie valt (deels) weg.']
-    ],
-    'E': [
-      ['Weg', 'Hindercategorie E'],
-      ['Vaarweg', 'Extreem langdurige of volledige uitval van een cruciale schakel. Richtwaarde: > 6 maanden stremming of herhaald uitvalpatroon. Geen realistisch alternatief, netwerkfunctie valt (deels) weg.']
-    ]
+  'Bereikbaarheid - Ongeplande hinder weg': {
+    '< A': [['Effect', 'Kleiner dan hindercategorie A']],
+    'A': [['Effect', 'Hindercategorie A']],
+    'B': [['Effect', 'Hindercategorie B']],
+    'C': [['Effect', 'Hindercategorie C']],
+    'D': [['Effect', 'Hindercategorie D']],
+    'E': [['Effect', 'Hindercategorie E']]
   },
-  'Leefbaarheid': {
-    '< A': [
-      ['Impact op mens', 'Geen merkbare aantasting van leefkwaliteit'],
-      ['Impact op milieu', 'Geen impact op natuur en milieu']
-    ],
-    'A': [
-      ['Impact op mens', 'Beperkte en tijdelijke hinder voor de leefomgeving'],
-      ['Impact op milieu', 'Lichte, volledig herstelbare schade aan natuur en milieu']
-    ],
-    'B': [
-      ['Impact op mens', 'Merkbare hinder met beperkte maar voelbare impact op leefkwaliteit'],
-      ['Impact op milieu', 'Tijdelijke of lokaal beperkte schade aan natuur en milieu']
-    ],
-    'C': [
-      ['Impact op mens', 'Aanhoudende en duidelijke hinder (geluid, trillingen, luchtkwaliteit, beleving)'],
-      ['Impact op milieu', 'Aanzienlijke aantasting van natuur en milieu; herstel mogelijk, maar ingrijpend']
-    ],
-    'D': [
-      ['Impact op mens', 'Structurele aantasting van leefkwaliteit met duidelijke gezondheids- of welzijnseffecten'],
-      ['Impact op milieu', 'Ernstige en langdurige aantasting van natuur en milieu; herstel alleen op zeer lange termijn en deels blijvend']
-    ],
-    'E': [
-      ['Impact op mens', 'Grootschalige en langdurige aantasting van woon-, werk- en leefklimaat'],
-      ['Impact op milieu', 'Onomkeerbare schade aan natuur en milieu; herstel niet mogelijk']
-    ]
+  'Bereikbaarheid - Ongeplande hinder vaarweg': {
+    '< A': [['Effect', 'Zeer korte stremming of lichte hinder']],
+    'A': [['Effect', 'Tijdelijke stremming met merkbare impact']],
+    'B': [['Effect', 'Langdurige stremming met grote impact']],
+    'C': [['Effect', 'Zeer langdurige of volledige uitval van een belangrijke schakel']],
+    'D': [['Effect', 'Extreem langdurige of volledige uitval van een cruciale schakel']],
+    'E': [['Effect', 'Catastrofale en zeer langdurige uitval van een cruciale vaarwegfunctie']]
   },
-  'Veiligheid': {
-    '< A': [
-      ['ARBO / verkeersveiligheid', '(In)direct: geen letsel'],
-      ['Sociale veiligheid', 'Geen gevoel van onveiligheid bij gebruikers']
-    ],
-    'A': [
-      ['ARBO / verkeersveiligheid', '(In)direct: niet blijvend letsel; zonder verzuim'],
-      ['Sociale veiligheid', 'Beperkt en tijdelijk gevoel van onveiligheid bij een kleine groep gebruikers']
-    ],
-    'B': [
-      ['ARBO / verkeersveiligheid', '(In)direct: niet blijvend letsel; met verzuim'],
-      ['Sociale veiligheid', 'Merkbaar gevoel van onveiligheid bij meerdere gebruikers']
-    ],
-    'C': [
-      ['ARBO / verkeersveiligheid', '(In)direct: medische assistentie / ziekenhuisopname'],
-      ['Sociale veiligheid', 'Duidelijk en aanhoudend gevoel van onveiligheid bij gebruikers']
-    ],
-    'D': [
-      ['ARBO / verkeersveiligheid', '(In)direct: mogelijk blijvend letsel'],
-      ['Sociale veiligheid', 'Breed en langdurig gevoel van onveiligheid; gebruikers mijden de locatie structureel']
-    ],
-    'E': [
-      ['ARBO / verkeersveiligheid', '(In)direct: mogelijk fataal letsel / waarschijnlijk blijvend letsel'],
-      ['Sociale veiligheid', 'Grootschalige maatschappelijke onrust en ernstige aantasting van vertrouwen']
-    ]
+  'Leefbaarheid - Impact op mens': {
+    '< A': [['Effect', 'Geen merkbare aantasting van leefkwaliteit']],
+    'A': [['Effect', 'Beperkte en tijdelijke hinder voor de leefomgeving']],
+    'B': [['Effect', 'Merkbare hinder met beperkte maar voelbare impact op leefkwaliteit']],
+    'C': [['Effect', 'Aanhoudende en duidelijke hinder, bijvoorbeeld geluid, trillingen, luchtkwaliteit of beleving']],
+    'D': [['Effect', 'Structurele aantasting van leefkwaliteit met duidelijke gezondheids- of welzijnseffecten']],
+    'E': [['Effect', 'Grootschalige en langdurige aantasting van woon-, werk- en leefklimaat']]
   },
-  'Financieel': {
-    '< A': [['Financiële schade', '< € 1.000']],
-    'A': [['Financiële schade', '> € 1.000']],
-    'B': [['Financiële schade', '> € 10.000']],
-    'C': [['Financiële schade', '> € 100.000']],
-    'D': [['Financiële schade', '> € 1.000.000']],
-    'E': [['Financiële schade', '> € 10.000.000']]
+  'Leefbaarheid - Impact op milieu': {
+    '< A': [['Effect', 'Geen impact op natuur en milieu']],
+    'A': [['Effect', 'Lichte, volledig herstelbare schade aan natuur en milieu']],
+    'B': [['Effect', 'Tijdelijke of lokaal beperkte schade aan natuur en milieu']],
+    'C': [['Effect', 'Aanzienlijke aantasting van natuur en milieu; herstel mogelijk, maar ingrijpend']],
+    'D': [['Effect', 'Ernstige en langdurige aantasting; herstel alleen op zeer lange termijn en deels blijvend']],
+    'E': [['Effect', 'Onomkeerbare schade aan natuur en milieu; herstel niet mogelijk']]
   },
-  'Imago': {
-    '< A': [['Reputatieschade', 'Interne negatieve melding']],
-    'A': [['Reputatieschade', 'Lokaal negatief in de pers']],
-    'B': [['Reputatieschade', 'Regionaal negatief in de pers']],
-    'C': [['Reputatieschade', 'Provinciaal negatief in de pers']],
-    'D': [['Reputatieschade', 'Landelijk negatief in de pers']],
-    'E': [['Reputatieschade', 'Internationaal negatief in de pers']]
+  'Veiligheid - ARBO/Verkeersveiligheid': {
+    '< A': [['Effect', '(In)direct: geen letsel']],
+    'A': [['Effect', '(In)direct: niet blijvend letsel; zonder verzuim']],
+    'B': [['Effect', '(In)direct: niet blijvend letsel; met verzuim']],
+    'C': [['Effect', '(In)direct: medische assistentie / ziekenhuisopname']],
+    'D': [['Effect', '(In)direct: mogelijk blijvend letsel']],
+    'E': [['Effect', '(In)direct: mogelijk fataal letsel / waarschijnlijk blijvend letsel']]
+  },
+  'Veiligheid - Sociale Veiligheid': {
+    '< A': [['Effect', 'Geen gevoel van onveiligheid bij gebruikers']],
+    'A': [['Effect', 'Beperkt en tijdelijk gevoel van onveiligheid bij een kleine groep gebruikers']],
+    'B': [['Effect', 'Merkbaar gevoel van onveiligheid bij meerdere gebruikers']],
+    'C': [['Effect', 'Duidelijk en aanhoudend gevoel van onveiligheid bij gebruikers']],
+    'D': [['Effect', 'Breed en langdurig gevoel van onveiligheid; gebruikers mijden de locatie structureel']],
+    'E': [['Effect', 'Grootschalige maatschappelijke onrust en ernstige aantasting van vertrouwen']]
+  },
+  'Financieel - Financiële schade': {
+    '< A': [['Effect', '< € 1.000']],
+    'A': [['Effect', '> € 1.000']],
+    'B': [['Effect', '> € 10.000']],
+    'C': [['Effect', '> € 100.000']],
+    'D': [['Effect', '> € 1.000.000']],
+    'E': [['Effect', '> € 10.000.000']]
+  },
+  'Imago - Reputatieschade': {
+    '< A': [['Effect', 'Interne negatieve melding']],
+    'A': [['Effect', 'Lokaal negatief in de pers']],
+    'B': [['Effect', 'Regionaal negatief in de pers']],
+    'C': [['Effect', 'Provinciaal negatief in de pers']],
+    'D': [['Effect', 'Landelijk negatief in de pers']],
+    'E': [['Effect', 'Internationaal negatief in de pers']]
   }
 };
 
+const roadHindranceMatrix = {
+  '0': ['A','A','A','A','A'],
+  '1': ['B','B','B','C','C'],
+  '2': ['B','B','C','C','D'],
+  '3': ['C','C','D','D','D'],
+  '4': ['D','D','D','D','D'],
+  '5': ['E','E','E','E','E']
+};
+
+const hindranceLabels = {
+  '0': '0) Geen hinder · < 15 min',
+  '1': '1) Kleine hinder · 15–30 min',
+  '2': '2) Matige hinder · 0,5–1 uur',
+  '3': '3) Grote hinder · 1–2 uur',
+  '4': '4) Zeer grote hinder · 2–4 uur',
+  '5': '5) Calamiteit · > 4 uur'
+};
+
+const affectedPeople = [
+  '< 1.000',
+  '1.000 - 9.999',
+  '10.000 - 99.999',
+  '100.000 - 999.999',
+  '≥ 1.000.000'
+];
+
 const businessValues = [
-  'Bereikbaarheid',
-  'Leefbaarheid',
-  'Veiligheid',
-  'Financieel',
-  'Imago'
+  'Bereikbaarheid - Ongeplande hinder weg',
+  'Bereikbaarheid - Ongeplande hinder vaarweg',
+  'Leefbaarheid - Impact op mens',
+  'Leefbaarheid - Impact op milieu',
+  'Veiligheid - ARBO/Verkeersveiligheid',
+  'Veiligheid - Sociale Veiligheid',
+  'Financieel - Financiële schade',
+  'Imago - Reputatieschade'
 ];
 
 let selectedChance = null;
@@ -467,24 +503,78 @@ businessValues.forEach(value => {
   const row = document.createElement('div');
   row.className = 'asset-row';
   row.dataset.value = value;
-  row.innerHTML = `
-    <div class="business">${value}</div>
-    <div class="effect-buttons">
-      ${effects.map(e => `<button type="button" data-effect="${e.id}">${e.id}</button>`).join('')}
-    </div>
-    <div class="result-cell"><div class="empty">Nog niet beoordeeld</div></div>
-    <div class="effect-detail"></div>
-  `;
-  row.querySelectorAll('button').forEach(btn => {
-    btn.addEventListener('click', () => {
-      const eff = effects.find(e => e.id === btn.dataset.effect);
+
+  if (value === 'Bereikbaarheid - Ongeplande hinder weg') {
+    row.innerHTML = `
+      <div class="business">${value}</div>
+      <div class="road-controls">
+        <div>
+          <label>Mate van hinder</label>
+          <select class="hindrance-select">
+            <option value="">Maak een keuze</option>
+            <option value="0">0) Geen hinder · &lt; 15 min</option>
+            <option value="1">1) Kleine hinder · 15–30 min</option>
+            <option value="2">2) Matige hinder · 0,5–1 uur</option>
+            <option value="3">3) Grote hinder · 1–2 uur</option>
+            <option value="4">4) Zeer grote hinder · 2–4 uur</option>
+            <option value="5">5) Calamiteit · &gt; 4 uur</option>
+          </select>
+        </div>
+        <div>
+          <label>Aantal gehinderden</label>
+          <select class="people-select">
+            <option value="">Maak een keuze</option>
+            ${affectedPeople.map((x,i) => `<option value="${i}">${x}</option>`).join('')}
+          </select>
+        </div>
+      </div>
+      <div class="result-cell"><div class="empty">Nog niet beoordeeld</div></div>
+      <div class="effect-detail"></div>
+    `;
+
+    const hindranceSelect = row.querySelector('.hindrance-select');
+    const peopleSelect = row.querySelector('.people-select');
+
+    function calculateRoadEffect() {
+      if (!hindranceSelect.value || peopleSelect.value === '') {
+        selections[value] = null;
+        const detail = row.querySelector('.effect-detail');
+        detail.classList.remove('visible');
+        detail.innerHTML = '';
+        updateAll();
+        return;
+      }
+      const cls = roadHindranceMatrix[hindranceSelect.value][Number(peopleSelect.value)];
+      const eff = effects.find(e => e.id === cls);
       selections[value] = eff;
-      row.querySelectorAll('button').forEach(b => b.classList.remove('active'));
-      btn.classList.add('active');
       renderEffectDetail(row, value, eff);
+      row.querySelector('.effect-detail').innerHTML +=
+        `<div class="criterion"><strong>Afgeleid uit:</strong> mate van hinder ${hindranceLabels[hindranceSelect.value]} × ${affectedPeople[Number(peopleSelect.value)]} gehinderden.</div>`;
       updateAll();
+    }
+
+    hindranceSelect.addEventListener('change', calculateRoadEffect);
+    peopleSelect.addEventListener('change', calculateRoadEffect);
+  } else {
+    row.innerHTML = `
+      <div class="business">${value}</div>
+      <div class="effect-buttons">
+        ${effects.map(e => `<button type="button" data-effect="${e.id}">${e.id}</button>`).join('')}
+      </div>
+      <div class="result-cell"><div class="empty">Nog niet beoordeeld</div></div>
+      <div class="effect-detail"></div>
+    `;
+    row.querySelectorAll('button').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const eff = effects.find(e => e.id === btn.dataset.effect);
+        selections[value] = eff;
+        row.querySelectorAll('button').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        renderEffectDetail(row, value, eff);
+        updateAll();
+      });
     });
-  });
+  }
   rows.appendChild(row);
 });
 
@@ -504,6 +594,7 @@ function renderEffectDetail(row, value, effect){
 function updateAll(){
   let scores = [];
   let classes = [];
+  let completedCount = 0;
 
   document.querySelectorAll('.asset-row').forEach(row => {
     const value = row.dataset.value;
@@ -519,6 +610,7 @@ function updateAll(){
     const cls = riskClass(effect.index, selectedChance.index);
     scores.push(score);
     classes.push(cls);
+    completedCount += 1;
 
     resultCell.innerHTML = `
       <div class="risk-badge ${cls.css}">
@@ -527,13 +619,16 @@ function updateAll(){
       </div>`;
   });
 
-  const complete = selectedChance && businessValues.every(v => selections[v]);
+  const warning = document.getElementById('incompleteWarning');
 
-  if (!complete){
+  // Without a chance class or any scored effect, there is no meaningful result yet.
+  if (!selectedChance || completedCount === 0){
     document.getElementById('highestClass').textContent = '–';
     document.getElementById('highestScore').textContent = '–';
     document.getElementById('totalScore').textContent = '–';
-    document.getElementById('summaryHint').textContent = 'Vul de waarschijnlijkheid en alle vijf effectklassen in.';
+    document.getElementById('summaryHint').textContent =
+      'Vul de waarschijnlijkheid en één of meer effectcategorieën in.';
+    warning.classList.remove('visible');
     return;
   }
 
@@ -541,12 +636,21 @@ function updateAll(){
   const highestCls = classes.find(c => c.rank === highestRank);
   const highestScore = Math.max(...scores);
   const totalScore = scores.reduce((a,b) => a+b, 0);
+  const complete = completedCount === businessValues.length;
 
   document.getElementById('highestClass').innerHTML =
     `<span class="class-pill ${highestCls.css}">${highestCls.name}</span>`;
   document.getElementById('highestScore').textContent = formatNumber(highestScore);
   document.getElementById('totalScore').textContent = formatNumber(totalScore);
-  document.getElementById('summaryHint').textContent = 'De beoordeling is compleet.';
+
+  if (complete){
+    document.getElementById('summaryHint').textContent = 'De beoordeling is compleet.';
+    warning.classList.remove('visible');
+  } else {
+    document.getElementById('summaryHint').textContent =
+      `Voorlopig resultaat op basis van ${completedCount} van ${businessValues.length} effectcategorieën.`;
+    warning.classList.add('visible');
+  }
 }
 
 document.getElementById('resetBtn').addEventListener('click', () => {
@@ -554,6 +658,7 @@ document.getElementById('resetBtn').addEventListener('click', () => {
   selections = Object.fromEntries(businessValues.map(v => [v, null]));
   document.querySelectorAll('input[name="chance"]').forEach(i => i.checked = false);
   document.querySelectorAll('.effect-buttons button').forEach(b => b.classList.remove('active'));
+  document.querySelectorAll('.road-controls select').forEach(s => s.value = '');
   document.querySelectorAll('.effect-detail').forEach(d => {
     d.classList.remove('visible');
     d.innerHTML = '';
