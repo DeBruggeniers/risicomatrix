@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Risicobeoordeling</title>
+<title>Risicobeoordeling B&U</title>
 <style>
   :root{
     --bg:#f4f7fb;
@@ -74,7 +74,7 @@
   .choice input{display:none}
   .choice label{
     display:flex;
-    min-height:102px;
+    min-height:150px;
     padding:13px 10px;
     border:2px solid var(--line);
     border-radius:12px;
@@ -98,6 +98,22 @@
     font-size:15px;
     color:var(--blue);
     margin-bottom:5px;
+  }
+  .choice .chance-name{
+    display:block;
+    font-weight:800;
+    margin-bottom:6px;
+    color:#344054;
+  }
+  .choice .probability{
+    display:block;
+    font-weight:700;
+    margin-bottom:5px;
+  }
+  .choice .frequency{
+    display:block;
+    color:var(--muted);
+    font-size:12px;
   }
   .effect-head,
   .asset-row{
@@ -291,7 +307,7 @@
 <body>
 <div class="wrap">
   <section class="hero">
-    <h1>Risicobeoordeling B&amp;U</h1>
+    <h1>Risicobeoordeling</h1>
     <p>Selecteer de waarschijnlijkheid en het effect per bedrijfswaarde. De risicoklasse en risicoscore worden automatisch berekend.</p>
   </section>
 
@@ -346,12 +362,12 @@
 
 <script>
 const chances = [
-  {id:'K1', factor:1,    text:'Minder dan 1 × per 30 jaar'},
-  {id:'K2', factor:3,    text:'1 × per 30 jaar of vaker'},
-  {id:'K3', factor:10,   text:'1 × per 10 jaar of vaker'},
-  {id:'K4', factor:20,   text:'1 × per 5 jaar of vaker'},
-  {id:'K5', factor:100,  text:'1 × per jaar of vaker'},
-  {id:'K6', factor:1200, text:'1 × per maand of vaker'}
+  {id:'K1', factor:1, name:'Zeer onwaarschijnlijk', probability:'< 1× per 30 jaar', frequency:'Het is voorstelbaar, maar optreden wordt op lange termijn nauwelijks verwacht.'},
+  {id:'K2', factor:3, name:'Onwaarschijnlijk', probability:'ca. 1× per 10–30 jaar', frequency:'Het kan optreden, maar wordt alleen op langere termijn incidenteel verwacht.'},
+  {id:'K3', factor:10, name:'Mogelijk', probability:'ca. 1× per 5–10 jaar', frequency:'Het is reëel en kan binnen een middellange termijn optreden.'},
+  {id:'K4', factor:20, name:'Waarschijnlijk', probability:'ca. 1× per 1–5 jaar', frequency:'Het wordt binnen enkele jaren verwacht.'},
+  {id:'K5', factor:100, name:'Zeer waarschijnlijk', probability:'≥ ca. 1× per jaar', frequency:'Het wordt op korte termijn verwacht en kan jaarlijks of vaker optreden.'},
+  {id:'K6', factor:1200, name:'Vrijwel zeker', probability:'≥ ca. 1× per maand', frequency:'Het treedt zeer frequent op of wordt op zeer korte termijn vrijwel zeker verwacht.'}
 ];
 
 const effects = [
@@ -490,7 +506,12 @@ chances.forEach((c, idx) => {
   div.innerHTML = `
     <input type="radio" name="chance" id="${c.id}" value="${c.id}">
     <label for="${c.id}">
-      <div><strong>${c.id}</strong>${c.text}</div>
+      <div>
+        <strong>${c.id.replace('K','')}</strong>
+        <span class="chance-name">${c.name}</span>
+        <span class="probability">${c.probability}</span>
+        <span class="frequency">${c.frequency}</span>
+      </div>
     </label>`;
   div.querySelector('input').addEventListener('change', () => {
     selectedChance = {...c, index: idx};
