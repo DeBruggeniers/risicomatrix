@@ -387,12 +387,12 @@ const effectDescriptions = {
     'E': [['Effect', 'Hindercategorie E']]
   },
   'Bereikbaarheid - Ongeplande hinder vaarweg': {
-    '< A': [['Effect', 'Zeer korte stremming of lichte hinder']],
-    'A': [['Effect', 'Tijdelijke stremming met merkbare impact']],
-    'B': [['Effect', 'Langdurige stremming met grote impact']],
-    'C': [['Effect', 'Zeer langdurige of volledige uitval van een belangrijke schakel']],
-    'D': [['Effect', 'Extreem langdurige of volledige uitval van een cruciale schakel']],
-    'E': [['Effect', 'Catastrofale en zeer langdurige uitval van een cruciale vaarwegfunctie']]
+    '< A': [['Effect', 'Geen tot zeer korte stremming of lichte hinder. Richtwaarde: <2 uur stremming of beperkte wachttijd, geen structureel effect op vaarroutes']],
+    'A': [['Effect', 'Tijdelijke stremming met merkbare impact. Richtwaarde: 2-24 uur stremming. Er is een alternatief, maar met extra reistijd of beperkingen']],
+    'B': [['Effect', 'Langdurige stremming met grote impact. Richtwaarde: 1-7 dagen stremming. Alternatieven zijn beperkt of zorgen voor aanzienlijke omvaart/vertraging']],
+    'C': [['Effect', 'Zeer langdurige of volledige uitval van een belangrijke schakel. Richtwaarde >7 dagen stremming of herhaald uitvalspatroon. Geen realistisch alternatief. Netwerkfunctie valt (deels) weg.']],
+    'D': [['Effect', 'Extreem langdurige of volledige uitval van een cruciale schakel. Richtwaarde >1 maand stremming of herhaald uitvalspatroon. Geen realistisch alternatief. Netwerkfunctie valt (deels) weg.']],
+    'E': [['Effect', 'Catastrofale en zeer langdurige uitval van een cruciale vaarwegfunctie. Richtwaarde >6 maanden stremming of herhaald uitvalspatroon. Geen realistisch alternatief. Netwerkfunctie valt (deels) weg.']]
   },
   'Leefbaarheid - Impact op mens': {
     '< A': [['Effect', 'Geen merkbare aantasting van leefkwaliteit']],
@@ -435,7 +435,7 @@ const effectDescriptions = {
     'E': [['Effect', '> € 10.000.000']]
   },
   'Imago - Reputatieschade': {
-    '< A': [['Effect', 'Interne negatieve melding']],
+    '< A': [['Effect', 'Geen tot wellicht een interne negatieve melding']],
     'A': [['Effect', 'Lokaal negatief in de pers']],
     'B': [['Effect', 'Regionaal negatief in de pers']],
     'C': [['Effect', 'Provinciaal negatief in de pers']],
@@ -463,11 +463,11 @@ const hindranceLabels = {
 };
 
 const affectedPeople = [
-  '< 1.000',
-  '1.000 - 9.999',
-  '10.000 - 99.999',
-  '100.000 - 999.999',
-  '≥ 1.000.000'
+  'Nauwelijks · < 1.000',
+  'Beperkt · <5.000',
+  'Aanzienlijk · <25.000',
+  'Omvangrijk · <125.000',
+  'Zeer omvangrijk · ≥ 125.000'
 ];
 
 const businessValues = [
