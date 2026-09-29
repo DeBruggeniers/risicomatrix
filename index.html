@@ -348,12 +348,13 @@
         <strong id="highestScore">–</strong>
       </div>
       <div class="summary-card">
-        <span>Totale risicoscore</span>
+        <span>Samengesteld risicogetal</span>
         <strong id="totalScore">–</strong>
       </div>
     </div>
     <div class="footnote">
-      Risicoscore = kansfactor × effectfactor. De totale risicoscore is de som van de scores over alle effectcategorieën.
+      Score per bedrijfswaarde = kansfactor × effectfactor. Het samengestelde risicogetal is de hoogste individuele score
+      plus 10% van de overige relevante scores. Effect &lt; A telt niet mee als aanvullend effect.
     </div>
   </section>
 </div>
@@ -361,20 +362,20 @@
 <script>
 const chances = [
   {id:'K1', factor:1, name:'Zeer onwaarschijnlijk', probability:'< 1× per 30 jaar', frequency:'Het is voorstelbaar, maar optreden wordt op lange termijn nauwelijks verwacht.'},
-  {id:'K2', factor:3, name:'Onwaarschijnlijk', probability:'ca. 1× per 10–30 jaar', frequency:'Het kan optreden, maar wordt alleen op langere termijn incidenteel verwacht.'},
-  {id:'K3', factor:10, name:'Mogelijk', probability:'ca. 1× per 5–10 jaar', frequency:'Het is reëel en kan binnen een middellange termijn optreden.'},
-  {id:'K4', factor:20, name:'Waarschijnlijk', probability:'ca. 1× per 1–5 jaar', frequency:'Het wordt binnen enkele jaren verwacht.'},
-  {id:'K5', factor:100, name:'Zeer waarschijnlijk', probability:'≥ ca. 1× per jaar', frequency:'Het wordt op korte termijn verwacht en kan jaarlijks of vaker optreden.'},
-  {id:'K6', factor:1200, name:'Vrijwel zeker', probability:'≥ ca. 1× per maand', frequency:'Het treedt zeer frequent op of wordt op zeer korte termijn vrijwel zeker verwacht.'}
+  {id:'K2', factor:2, name:'Onwaarschijnlijk', probability:'ca. 1× per 10–30 jaar', frequency:'Het kan optreden, maar wordt alleen op langere termijn incidenteel verwacht.'},
+  {id:'K3', factor:4, name:'Mogelijk', probability:'ca. 1× per 5–10 jaar', frequency:'Het is reëel en kan binnen een middellange termijn optreden.'},
+  {id:'K4', factor:8, name:'Waarschijnlijk', probability:'ca. 1× per 1–5 jaar', frequency:'Het wordt binnen enkele jaren verwacht.'},
+  {id:'K5', factor:16, name:'Zeer waarschijnlijk', probability:'≥ ca. 1× per jaar', frequency:'Het wordt op korte termijn verwacht en kan jaarlijks of vaker optreden.'},
+  {id:'K6', factor:32, name:'Vrijwel zeker', probability:'≥ ca. 1× per maand', frequency:'Het treedt zeer frequent op of wordt op zeer korte termijn vrijwel zeker verwacht.'}
 ];
 
 const effects = [
   {id:'< A', factor:1, index:0, severity:'Verwaarloosbaar'},
-  {id:'A',   factor:10, index:1, severity:'Klein'},
-  {id:'B',   factor:100, index:2, severity:'Matig'},
-  {id:'C',   factor:1000, index:3, severity:'Behoorlijk'},
-  {id:'D',   factor:10000, index:4, severity:'Ernstig'},
-  {id:'E',   factor:100000, index:5, severity:'Catastrofaal'}
+  {id:'A',   factor:2, index:1, severity:'Klein'},
+  {id:'B',   factor:4, index:2, severity:'Matig'},
+  {id:'C',   factor:8, index:3, severity:'Behoorlijk'},
+  {id:'D',   factor:16, index:4, severity:'Ernstig'},
+  {id:'E',   factor:32, index:5, severity:'Catastrofaal'}
 ];
 
 const effectDescriptions = {
@@ -488,7 +489,19 @@ const chanceGrid = document.getElementById('chanceGrid');
 const rows = document.getElementById('businessRows');
 
 function formatNumber(n){
-  return new Intl.NumberFormat('nl-NL').format(n);
+  return new Intl.NumberFormat('nl-NL', {maximumFractionDigits:1}).format(n);
+}
+
+// Eén hoogste score telt volledig. Alleen andere relevante bedrijfswaarden
+// (effect A t/m E) tellen voor 10% mee; < A geeft geen extra opslag.
+function combinedRiskScore(scoredEffects){
+  const relevant = scoredEffects.filter(item => item.effectId !== '< A');
+  if (relevant.length === 0){
+    return Math.max(...scoredEffects.map(item => item.score));
+  }
+  const highest = Math.max(...relevant.map(item => item.score));
+  const sum = relevant.reduce((total, item) => total + item.score, 0);
+  return highest + (sum - highest) / 10;
 }
 
 function riskClass(effectIndex, chanceIndex){
@@ -612,6 +625,7 @@ function renderEffectDetail(row, value, effect){
 
 function updateAll(){
   let scores = [];
+  let scoredEffects = [];
   let classes = [];
   let completedCount = 0;
 
@@ -628,6 +642,7 @@ function updateAll(){
     const score = selectedChance.factor * effect.factor;
     const cls = riskClass(effect.index, selectedChance.index);
     scores.push(score);
+    scoredEffects.push({score, effectId:effect.id});
     classes.push(cls);
     completedCount += 1;
 
@@ -654,7 +669,7 @@ function updateAll(){
   const highestRank = Math.max(...classes.map(c => c.rank));
   const highestCls = classes.find(c => c.rank === highestRank);
   const highestScore = Math.max(...scores);
-  const totalScore = scores.reduce((a,b) => a+b, 0);
+  const totalScore = combinedRiskScore(scoredEffects);
   const complete = completedCount === businessValues.length;
 
   document.getElementById('highestClass').innerHTML =
